@@ -65,3 +65,7 @@ app.register_blueprint(user)
 app.register_blueprint(sess)
 
 app.register_blueprint(email)
+
+@app.teardown_request
+def remove_session(exception=None):
+    session.remove()
