@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container bg-white">
-	<h3 class="m-0 py-2">Order - {{order.order_ref}} <div class="float-right"><button class="btn btn-dark btn-md" onclick="printDiv('order', true)"><span class="fa fa-print"></span> Print</button></div></h3>
+	<h3 class="m-0 py-2">Order - {{order.order_ref}} <div class="float-right"><button class="btn btn-dark btn-md" onclick="printDiv('order-receipt', true)"><span class="fa fa-print"></span> Print</button></div></h3>
 	<hr>
 	<div class="row form-group pt-1">
 		<div id="order" class="col-md-6 card p-2 shadow">
@@ -58,6 +58,66 @@
 				 	</tr> 
 				</tfoot>
 			</table>
+
+			<!-- start of printable -->
+			<div class="p-3 py-4 pb-5 mb-5 d-none d-print-block" id="order-receipt">
+				<div id="header-order-receipt"></div>
+				<div>
+					<div>
+						<span class="font-weight-bold">No:</span><span class="ml-5 font-italic">{{order.order_ref}}</span>
+					</div>
+					<div class="mt-2">
+						<span class="font-weight-bold">Customer Table:</span><span class="ml-4">{{ order.customer }}</span>
+					</div>
+					<div class="mt-2">
+						<span class="font-weight-bold">Cashier:</span><span class="ml-4">{{ order.cashier.first_name|title }} {{ order.cashier.last_name|title }}</span>
+					</div>
+					<div class="mt-2">
+						<span class="font-weight-bold">Date:</span><span class="ml-3">{{order.date.strftime('%d/%m/%Y')}}</span>
+					</div>
+				</div>
+				<div class="border border-dark mt-2">
+					<div class="row m-0 text-center border-bottom border-dark font-weight-bold">
+						<div class="col-2 border-right border-dark p-3">Qty</div>
+						<div class="col-4 border-right border-dark p-3">Particulars</div>
+						<div class="col-3 border-right border-dark p-3">Rate</div>
+						<div class="col-3 p-3">Amount</div>
+					</div>
+					{% for sale in order.sales %}
+						<div class="row m-0 border-top border-dark text-center">
+							<div class="col-2 border-right border-dark p-3">{{ sale.quantity }}</div>
+							<div class="col-4 border-right border-dark p-3 text-left">
+								{%- if sale.brand %}
+									{{ sale.brand.name }}
+								{% elif sale.food %}
+									{{ sale.food.name }}
+								{% endif -%}
+							</div>
+							<div class="col-3 border-right border-dark p-3">{{"{:,}".format(sale.sale_price) }}</div>
+							<div class="col-3 p-3">{{ "{:,}".format(sale.sale_price * sale.quantity) }}</div>
+						</div>
+					{% endfor %}
+					<div class="row m-0 border-top border-dark text-center">
+							<div class="col-2 border-right border-dark p-4"></div>
+							<div class="col-4 border-right border-dark p-4"></div>
+							<div class="col-3 border-right border-dark p-4"></div>
+							<div class="col-3 p-3"></div>
+					</div>
+				</div>
+				<div class="row m-0 text-center mt-2 font-weight-bold">
+					<div class="col-5"></div>
+					<div class="col-3 text-left border border-dark p-3">Total Bill</div>
+					<div class="col-4 border border-dark border-left-0 p-3">{{ "{:,}".format(order.bill) }}</div>
+				</div>
+				<div class="row m-0 text-center font-weight-bold">
+					<div class="col-5"></div>
+					<div class="col-3 text-left border border-dark border-top-0 p-3">Amount Paid</div>
+					<div class="col-4 border border-dark border-left-0 border-top-0 p-3">{{ "{:,}".format(order.paid) }}</div>
+				</div>
+				<p class="font-italic text-center mt-3">(slogan)</p>
+			</div>
+			<!-- end of printable -->
+			
 		</div>
 
 		<div class="col-md-6 pt-2">

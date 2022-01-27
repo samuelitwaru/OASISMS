@@ -12,7 +12,7 @@ from random import randint
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 path = 'sqlite:////' + os.path.join(basedir, 'data.sqlite')
-engine = create_engine(path)
+engine = create_engine(path, connect_args={'check_same_thread': False})
 session = scoped_session(sessionmaker(bind=engine))
 
 Base = declarative_base()
