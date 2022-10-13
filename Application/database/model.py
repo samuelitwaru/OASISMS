@@ -99,8 +99,10 @@ class KitchenStock(Base):
     name = Column(String(64), unique=True)
     quantity_available = Column(Float(2), default=0.0)
     usage_unit = Column(String)
-    kitchen_stock_purchases = relationship("KitchenStockPurchase", backref="kitchen_stock")
-    kitchen_stock_usages = relationship("KitchenStockUsage", backref="kitchen_stock")
+    kitchen_stock_purchases = relationship(
+        "KitchenStockPurchase", backref="kitchen_stock")
+    kitchen_stock_usages = relationship(
+        "KitchenStockUsage", backref="kitchen_stock")
 
     def __init__(self, name, usage_unit):
         self.name = name.replace("/", "-")
@@ -154,10 +156,12 @@ class KitchenStockPurchase(Base):
         self.added_stock_unit = added_stock_unit
         self.kitchen_stock_name = stock.name
         if user.chef:
-            self.chef_name = " ".join([user.chef.first_name, user.chef.last_name])
+            self.chef_name = " ".join(
+                [user.chef.first_name, user.chef.last_name])
             user.chef.kitchen_stock_purchases.append(self)
         elif user.manager:
-            self.chef_name = " ".join([user.manager.first_name, user.manager.last_name, "(Manager)"])
+            self.chef_name = " ".join(
+                [user.manager.first_name, user.manager.last_name, "(Manager)"])
         stock.kitchen_stock_purchases.append(self)
         stock.add_quantity(added_stock_quantity)
         session.add(self)
@@ -174,7 +178,8 @@ class KitchenStockPurchase(Base):
         session.commit()
 
     def read_limit(self, number, limit):
-        page = paginate(session.query(self).order_by(desc("date")), number, limit)
+        page = paginate(session.query(self).order_by(
+            desc("date")), number, limit)
         return page
 
     def filter(self, item, chef, _from, to):
@@ -223,7 +228,8 @@ class KitchenStockUsage(Base):
         session.commit()
 
     def read_limit(self, number, limit):
-        page = paginate(session.query(self).order_by(desc("date")), number, limit)
+        page = paginate(session.query(self).order_by(
+            desc("date")), number, limit)
         return page
 
     def filter(self, item, chef, _from, to):
@@ -237,7 +243,7 @@ class Category(Base):
     brands = relationship("Brand", backref="category")
 
     def __init__(self, name):
-        self.name = name.replace("/","-")
+        self.name = name.replace("/", "-")
         session.add(self)
         session.commit()
 
@@ -248,7 +254,7 @@ class Category(Base):
         return session.query(self).filter_by(id=id).one()
 
     def update(self, name):
-        self.name = name.replace("/","-")
+        self.name = name.replace("/", "-")
         session.commit()
 
     def delete(self):
@@ -272,7 +278,7 @@ class Brand(Base):
     sales = relationship("Sale", backref="brand")
 
     def __init__(self, name, quantity_available, category, purchase_guide):
-        self.name = name.replace("/","-")
+        self.name = name.replace("/", "-")
         self.quantity_available = quantity_available
         session.add(self)
         purchase_guide.set_brand(self)
@@ -287,7 +293,7 @@ class Brand(Base):
         return session.query(self).filter_by(id=id).one()
 
     def update(self, name, category):
-        self.name = name.replace("/","-")
+        self.name = name.replace("/", "-")
         category.add_brand(self)
         session.commit()
 
@@ -397,7 +403,8 @@ class Purchase(Base):
         session.commit()
 
     def read_limit(self, number, limit):
-        page = paginate(session.query(self).order_by(desc("date")), number, limit)
+        page = paginate(session.query(self).order_by(
+            desc("date")), number, limit)
         return page
 
     def filter(self, id, _from, to, filter_bar):
@@ -436,14 +443,15 @@ class Order(Base):
         return session.query(self).order_by(desc("date")).all()
 
     def read_limit(self, number, limit):
-        page = paginate(session.query(self).order_by(desc("date")), number, limit)
+        page = paginate(session.query(self).order_by(
+            desc("date")), number, limit)
         return page
 
     def read_one(self, id):
         return session.query(self).filter_by(id=id).first()
 
     def create_ref(self):
-        return "OASIS-O-"+str(randint(1000, 9999))+"-"+datetime.now().strftime("%d%m%Y")
+        return "SALES-O-"+str(randint(1000, 9999))+"-"+datetime.now().strftime("%d%m%Y")
 
     def update_payment(self, payment):
         self.paid += payment
@@ -519,7 +527,8 @@ class Sale(Base):
         return session.query(self).filter_by(id=id).first()
 
     def read_food_sales(self, number, limit):
-        page = paginate(session.query(self).filter(self.food_id != None).order_by(desc("date")), number, limit)
+        page = paginate(session.query(self).filter(
+            self.food_id != None).order_by(desc("date")), number, limit)
         return page
 
     def filter(self, item, cashier, waiter, _from, to):
@@ -533,7 +542,8 @@ class Sale(Base):
                 return session.query(self).filter(self.food_id == item_id, self.cashier_id.like("%"+cashier), self.waiter_id.like("%"+waiter), and_(self.date >= _from, self.date <= to)).order_by(desc("date")).all()
 
     def read_limit(self, number, limit):
-        page = paginate(session.query(self).order_by(desc("date")), number, limit)
+        page = paginate(session.query(self).order_by(
+            desc("date")), number, limit)
         return page
 
 
@@ -575,7 +585,8 @@ class Cashier(Base):
     sales = relationship("Sale", backref="cashier")
     orders = relationship("Order", backref="cashier")
     sessions = relationship("Session", backref="cashier")
-    user = relationship("User", backref="cashier", cascade="all,delete", uselist=False)
+    user = relationship("User", backref="cashier",
+                        cascade="all,delete", uselist=False)
 
     def __init__(self, first_name, last_name, user):
         self.first_name = first_name
@@ -630,7 +641,8 @@ class Session(Base):
         return session.query(self).order_by(desc("start_time")).all()
 
     def read_limit(self, number, limit):
-        page = paginate(session.query(self).order_by(desc("start_time")), number, limit)
+        page = paginate(session.query(self).order_by(
+            desc("start_time")), number, limit)
         return page
 
     def get_current_session(self, cashier):
@@ -647,7 +659,8 @@ class Session(Base):
     def get_total_sales(self):
         total_sales = 0
         for order in self.orders:
-            total_sales += sum([(sale.quantity * sale.sale_price) for sale in order.sales])
+            total_sales += sum([(sale.quantity * sale.sale_price)
+                               for sale in order.sales])
         return total_sales
 
 
@@ -657,9 +670,11 @@ class Chef(Base):
     first_name = Column(String(64))
     last_name = Column(String(64))
     admin = Column(Boolean)
-    user = relationship("User", backref="chef", cascade="all,delete", uselist=False)
+    user = relationship("User", backref="chef",
+                        cascade="all,delete", uselist=False)
     kitchen_stock_usages = relationship("KitchenStockUsage", backref="chef")
-    kitchen_stock_purchases = relationship("KitchenStockPurchase", backref="chef")
+    kitchen_stock_purchases = relationship(
+        "KitchenStockPurchase", backref="chef")
 
     def __init__(self, first_name, last_name, admin, user):
         self.first_name = first_name
@@ -698,7 +713,8 @@ class Manager(Base):
     last_name = Column(String(64))
     email = Column(String(64))
     boss_email = Column(String(64))
-    user = relationship("User", backref="manager", cascade="all,delete", uselist=False)
+    user = relationship("User", backref="manager",
+                        cascade="all,delete", uselist=False)
 
     def __init__(self, first_name, last_name, email, boss_email, user):
         self.first_name = first_name
@@ -792,7 +808,8 @@ class User(Base, UserMixin):
 
     def username_taken(self, username, except_user_name=None):
         if except_user_name:
-            users = session.query(self).filter(username!=except_user_name).all()
+            users = session.query(self).filter(
+                username != except_user_name).all()
         else:
             users = User.read(User)
         for user in users:
